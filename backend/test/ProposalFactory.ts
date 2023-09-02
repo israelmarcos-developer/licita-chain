@@ -50,6 +50,6 @@ describe("Proposal Factory", function () {
 
         expect(
             await proposalFactory.createProposalToken(22, "João vai fornecer doces", companyToken)
-        ).to.emit(proposalFactory, "Proposalp 6yhnmp777777768yr7r67pyr6y8pçrftg6yhijkp78TokenEmmitted");
+        ).to.emit(proposalFactory, "ProposalTokenEmmitted");
     })
 })
