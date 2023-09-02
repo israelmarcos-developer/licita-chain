@@ -13,7 +13,6 @@ contract ProposalToken is Ownable {
     constructor(uint _value, string memory _info) 
     Ownable()
     {
-        // transferOwnership();
         value = _value;
         info = _info;
     }
