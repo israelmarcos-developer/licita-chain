@@ -1,9 +1,8 @@
-import WalletButton from '../components/WalletButton'
+import WalletButton from '../components/Wallet'
 import MenuNavigation from '../components/MenuNavigation'
 import Image from 'react-bootstrap/Image';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container'
 export default function Home() {
 
   return (

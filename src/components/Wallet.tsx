@@ -1,3 +1,4 @@
+import {SingnIn} from "../services/Web3Service"
 import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image';
@@ -5,20 +6,30 @@ import Image from 'react-bootstrap/Image';
 const WalletButton = () => {
 
     const [isLoading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState <string | null>(null);
+    const [walletAddress, setWalletAddress] = useState <string | null>(null);
 
+    // Effect loading 1000s
     const handleClick = () => setLoading(true);
     useEffect(() => {
         function simulateNetworkRequest() {
-            return new Promise((resolve) => setTimeout(resolve, 2000));
+            return new Promise((resolve) => setTimeout(resolve, 1000));
         }
-
         if (isLoading) {
-            simulateNetworkRequest().then(() => {
+            simulateNetworkRequest().then(async () => {
                 setLoading(false);
-            });
+
+                // Web3Service - Login wallet user
+                const result = await SingnIn()
+                if (typeof result === 'string'){
+                    setErrorMessage(result)
+                }else {
+                    setWalletAddress(result);
+                }
+              });
         }
     }, [isLoading]);
+    
 
     return (
         <div className='container'>
@@ -37,6 +48,10 @@ const WalletButton = () => {
                         {isLoading ? 'Loading…' : 'Login com MetaMask'}
                     </Button>
                 </div>
+                <p className="container mt-3">
+                    {walletAddress && <p>{walletAddress}</p>}
+                    {errorMessage && <p>{errorMessage}</p>}
+                </p>
             </div>
         </div>
     );
