@@ -4,3 +4,9 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
+
+module.exports = {
+  images: {
+    domains: ["sso.acesso.gov.br", "upload.wikimedia.org"],
+  },
+};
