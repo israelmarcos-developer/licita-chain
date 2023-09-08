@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 import "./Bidding.sol";
 import "./RealDigital.sol";
@@ -32,11 +33,11 @@ contract BiddingFactory is AccessControl {
         
         Bidding BiddingContract = new Bidding(_title, DrexTokenAddress, _proposal);
 
-        payBidding(tx.origin, address(BiddingContract), _biddingValue);
+        sendFundsToBidding(tx.origin, address(BiddingContract), _biddingValue);
         emit NewBiddingEmitted(address(BiddingContract), _biddingValue, msg.sender);
     }
 
-    function payBidding(address _from, address _to, uint256 _amount) public {
+    function sendFundsToBidding(address _from, address _to, uint256 _amount) public {
         IERC20(DrexTokenAddress).transferFrom(_from, _to, _amount);
     }
 }

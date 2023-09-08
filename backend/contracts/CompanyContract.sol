@@ -25,7 +25,7 @@ contract CompanyContract is CompanyContractInterface, ERC721, ERC721Burnable, Ac
         function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, AccessControl)
+        override(ERC721, AccessControl, IERC165)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
