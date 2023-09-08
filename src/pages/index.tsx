@@ -8,14 +8,13 @@ export default function Home() {
   return (
     <main>
       <MenuNavigation />
-
       <div className='container-login-custon'>
         <Row>
           <Col>
             <Image src="https://sso.acesso.gov.br/assets/govbr/img/conta_govbr_v2.jpg" alt='img' fluid />
           </Col>
           <Col>
-          <WalletButton />
+            <WalletButton />
           </Col>
         </Row>
       </div>
