@@ -1,45 +1,50 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import "hardhat/console.sol";
+import "./interfaces/CompanyContractInterface.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/interfaces/IERC20.sol";
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-import "./Bidding.sol";
-import "./RealDigital.sol";
+contract CompanyContract is
+    CompanyContractInterface,
+    ERC721,
+    ERC721Burnable,
+    AccessControl
+{
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-contract BiddingFactory is AccessControl {
-    address private DrexTokenAddress;
-    address private GovToken;
-    address private CompanyToken;
+    mapping(address => string) private cnpjs;
 
-    modifier OnlyPublicOrg() {
-        require(IERC721(GovToken).balanceOf(msg.sender) > 0, "You cannot use this functions");
-        _;
-    }
-
-    event NewBiddingEmitted(address indexed biddingAddress, uint256 indexed biddingValue, address biddingOwner);
-
-    constructor(address _drexTokenAddress, address _govToken, address _companyTokenAddress) {
+    constructor() ERC721("CompanyToken", "CMP") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        DrexTokenAddress = _drexTokenAddress;
-        GovToken = _govToken;
-        CompanyToken = _companyTokenAddress;
+        _grantRole(MINTER_ROLE, msg.sender);
     }
 
-    function createBidding(string memory _title, uint256 _biddingValue, string memory _proposal) payable public OnlyPublicOrg() {
-        uint256 senderBalance = IERC20(DrexTokenAddress).balanceOf(msg.sender);
-        uint256 allowance = IERC20(DrexTokenAddress).allowance(tx.origin, address(this));
-        require(senderBalance >= _biddingValue, "Insufficient balance of DREX");
-        require(allowance >= _biddingValue, "Insufficient allowance");
-        
-        Bidding BiddingContract = new Bidding(_title, DrexTokenAddress, CompanyToken, _proposal);
-
-        sendFundsToBidding(tx.origin, address(BiddingContract), _biddingValue);
-        emit NewBiddingEmitted(address(BiddingContract), _biddingValue, msg.sender);
+    function safeMint(
+        address to,
+        string memory _cnpj
+    ) public onlyRole(MINTER_ROLE) {
+        _safeMint(to, uint(keccak256(abi.encodePacked(_cnpj))));
     }
 
-    function sendFundsToBidding(address _from, address _to, uint256 _amount) public {
-        IERC20(DrexTokenAddress).transferFrom(_from, _to, _amount);
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, AccessControl, IERC165) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function getCNPJ(address _owner) external view returns (string memory) {
+        require(
+            _owner != address(0),
+            "Company Token: address zero is not a valid owner"
+        );
+        require(
+            balanceOf(tx.origin) > 0,
+            "This Wallet doesn't contain a token"
+        );
+
+        return cnpjs[_owner];
     }
 }
