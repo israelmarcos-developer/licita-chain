@@ -8,7 +8,9 @@ import "./interfaces/CompanyContractInterface.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./RealDigital.sol";
 
-contract Bidding is ERC165, Ownable {
+import "hardhat/console.sol";
+
+contract Bidding is ERC165 {
     struct Details {
         bytes32 biddingId;
         string title;
@@ -32,6 +34,7 @@ contract Bidding is ERC165, Ownable {
     Details biddinDetails;
     bytes public CurrentTimestamp = abi.encodePacked(block.timestamp);
     address[] public proposalAddresses;
+    address owner;
 
     /**
      * Modifier to validate current state
@@ -41,6 +44,11 @@ contract Bidding is ERC165, Ownable {
             biddinDetails.state == _state,
             "This function is blocked by the state"
         );
+        _;
+    }
+
+    modifier OnlyOwner() {
+        require(msg.sender == owner, "The sender is not the owner");
         _;
     }
 
@@ -72,11 +80,12 @@ contract Bidding is ERC165, Ownable {
             _biddingPayableTokenAddress,
             IN_PROGRESS_STATE
         );
+        owner = address(tx.origin);
     }
 
     function chooseWinner(
         address _winnerProposalTokenAddress
-    ) public onlyOwner OnlyState(IN_PROGRESS_STATE) {
+    ) public OnlyOwner OnlyState(IN_PROGRESS_STATE) {
         require(
             ERC165Checker.supportsInterface(
                 _winnerProposalTokenAddress,
@@ -98,17 +107,21 @@ contract Bidding is ERC165, Ownable {
             "No proposal has been chosen yet"
         );
 
+        console.log("Who sent: ", msg.sender);
+
         address proposalOwner = OwnableInterface(biddinDetails.choosenProposal)
             .owner();
 
-        uint amountToBeTransferedToWinner = IERC20(
+        console.log("Who detected: ", proposalOwner);
+
+        uint amountToBeTransferedToGovernment = IERC20(
             biddinDetails.biddingPayableTokenAddress
         ).balanceOf(address(this)) -
             ProposalTokenInterface(biddinDetails.choosenProposal).getValue();
 
-        uint amountToBeTransferedBackToGovernment = IERC20(
+        uint amountToBeTransferedToWinner = IERC20(
             biddinDetails.biddingPayableTokenAddress
-        ).balanceOf(address(this)) - amountToBeTransferedToWinner;
+        ).balanceOf(address(this)) - amountToBeTransferedToGovernment;
 
         IERC20(biddinDetails.biddingPayableTokenAddress).transfer(
             proposalOwner,
@@ -116,7 +129,7 @@ contract Bidding is ERC165, Ownable {
         );
         IERC20(biddinDetails.biddingPayableTokenAddress).transfer(
             proposalOwner,
-            amountToBeTransferedBackToGovernment
+            amountToBeTransferedToGovernment
         );
 
         biddinDetails.state = FINISHED_STATE; // it will block any other actions except by consulting
@@ -144,8 +157,6 @@ contract Bidding is ERC165, Ownable {
         );
 
         addMemberToProposalAddresses(_proposalAddress);
-
-        emit NewProposalRegistered(tx.origin, _proposalAddress);
     }
 
     function getBiddingAvailableBudget() public view returns (uint256 balance) {
@@ -159,6 +170,8 @@ contract Bidding is ERC165, Ownable {
         address _newProposal
     ) public OnlyState(IN_PROGRESS_STATE) {
         proposalAddresses.push(_newProposal);
+
+        emit NewProposalRegistered(tx.origin, _newProposal);
     }
 
     function getPayableTokenAddress()
@@ -167,6 +180,10 @@ contract Bidding is ERC165, Ownable {
         returns (address _payableTokenAddress)
     {
         _payableTokenAddress = biddinDetails.biddingPayableTokenAddress;
+    }
+
+    function getRegisteredProposals() public view returns(address[] memory) {
+        return proposalAddresses;
     }
 
     function getProposal() public view returns (string memory _proposal) {

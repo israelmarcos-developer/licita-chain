@@ -26,10 +26,10 @@ contract ProposalFactory is AccessControl {
         _;
     }
 
-    constructor(address _drexTokenAddress, address _govToken) {
+    constructor(address _drexTokenAddress, address _companyTokenAddress) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         DrexTokenAddress = _drexTokenAddress;
-        CompanyToken = _govToken;
+        CompanyToken = _companyTokenAddress;
     }
 
     function createProposalToken(
@@ -37,17 +37,6 @@ contract ProposalFactory is AccessControl {
         string memory _info,
         address _companyContractAddress
     ) external onlyCompany {
-        uint256 senderBalance = IERC20(DrexTokenAddress).balanceOf(msg.sender);
-        uint256 allowance = IERC20(DrexTokenAddress).allowance(
-            tx.origin,
-            address(this)
-        );
-        require(
-            senderBalance >= _proposalValue,
-            "Insufficient balance of DREX"
-        );
-        require(allowance >= _proposalValue, "Insufficient allowance");
-
         require(
             IERC721(_companyContractAddress).balanceOf(tx.origin) > 0,
             "There are no company tokens in your wallet"

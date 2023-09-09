@@ -37,13 +37,12 @@ contract BiddingFactory is AccessControl {
         uint256 _biddingValue,
         string memory _proposal
     ) public payable OnlyPublicOrg {
-        uint256 senderBalance = IERC20(DrexTokenAddress).balanceOf(msg.sender);
+        uint256 senderBalance = IERC20(DrexTokenAddress).balanceOf(tx.origin);
         uint256 allowance = IERC20(DrexTokenAddress).allowance(
             tx.origin,
             address(this)
         );
-        require(senderBalance >= _biddingValue, "Insufficient balance of DREX");
-        require(allowance >= _biddingValue, "Insufficient allowance");
+        require(senderBalance >= _biddingValue || allowance >= _biddingValue, "Insufficient balance of DREX");
 
         Bidding BiddingContract = new Bidding(
             _title,
