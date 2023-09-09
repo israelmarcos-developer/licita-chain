@@ -2,12 +2,12 @@ import { ethers } from "hardhat";
 
 async function main() {
 
-  const factory = await ethers.deployContract("ProposalToken");
+  const proposal = await ethers.deployContract("ProposalToken");
 
-  await factory.waitForDeployment();
+  await proposal.waitForDeployment();
 
   console.log(
-    `Proposal Token Factory deployed to ${factory.target}`
+    `Proposal Token deployed to ${proposal.target}`
   );
 }
 
