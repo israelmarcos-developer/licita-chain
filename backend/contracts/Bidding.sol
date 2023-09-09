@@ -5,10 +5,10 @@ import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "./interfaces/OwnableInterface.sol";
 import "./interfaces/ProposalTokenInterface.sol";
 import "./interfaces/CompanyContractInterface.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./RealDigital.sol";
 
-contract Bidding {
-
+contract Bidding is ERC165, Ownable {
     struct Details {
         bytes32 biddingId;
         string title;
@@ -31,64 +31,157 @@ contract Bidding {
      */
     Details biddinDetails;
     bytes public CurrentTimestamp = abi.encodePacked(block.timestamp);
-    string[] proposalAddresses;
+    address[] public proposalAddresses;
 
     /**
      * Modifier to validate current state
      */
     modifier OnlyState(bytes32 _state) {
-        require(biddinDetails.state == _state, "This function is blocked by the state");
+        require(
+            biddinDetails.state == _state,
+            "This function is blocked by the state"
+        );
         _;
     }
 
     /**
      * Events for contract logs
      */
-    event PayBidding(uint256 indexed _value, address indexed _choosenProposalAddress, address indexed _companyTokenAddress);
+    event PayBidding(
+        uint256 indexed _value,
+        address indexed _choosenProposalAddress,
+        address indexed _companyTokenAddress
+    );
+    event NewProposalRegistered(
+        address indexed _proposalOwner,
+        address indexed _proposalAddress
+    );
+    event ProposalChosen(address indexed _chosenProposalAddress);
 
-    constructor(string memory _title, address _biddingPayableTokenAddress, string memory _proposal) {
+    constructor(
+        string memory _title,
+        address _biddingPayableTokenAddress,
+        string memory _proposal
+    ) {
         biddinDetails = Details(
-            keccak256(CurrentTimestamp), 
-            _title, 
-            CurrentTimestamp, 
-            _proposal, 
+            keccak256(CurrentTimestamp),
+            _title,
+            CurrentTimestamp,
+            _proposal,
             address(0),
             _biddingPayableTokenAddress,
-            IN_PROGRESS_STATE);
+            IN_PROGRESS_STATE
+        );
     }
 
-    function payBidding(address _winnerProposalTokenAddress) external {
-        require(biddinDetails.choosenProposal != address(0), "No proposal has been chosen yet");
+    function chooseWinner(
+        address _winnerProposalTokenAddress
+    ) public onlyOwner OnlyState(IN_PROGRESS_STATE) {
+        require(
+            ERC165Checker.supportsInterface(
+                _winnerProposalTokenAddress,
+                type(ProposalTokenInterface).interfaceId
+            ),
+            "The address sent was not from a Proposal"
+        );
 
-        address proposalOwner = OwnableInterface(_winnerProposalTokenAddress).owner();
+        biddinDetails.choosenProposal = _winnerProposalTokenAddress;
 
-        uint amountToBeTransferedToWinner = IERC20(biddinDetails.biddingPayableTokenAddress).balanceOf(address(this)) - 
-            ProposalTokenInterface(_winnerProposalTokenAddress).getValue();
+        emit ProposalChosen(_winnerProposalTokenAddress);
 
-        uint amountToBeTransferedBackToGovernment = IERC20(biddinDetails.biddingPayableTokenAddress).balanceOf(address(this)) - 
-            amountToBeTransferedToWinner;
+        payBidding();
+    }
 
-        IERC20(biddinDetails.biddingPayableTokenAddress).transfer(proposalOwner, amountToBeTransferedToWinner);
-        IERC20(biddinDetails.biddingPayableTokenAddress).transfer(proposalOwner, amountToBeTransferedBackToGovernment);
+    function payBidding() internal OnlyState(IN_PROGRESS_STATE) {
+        require(
+            biddinDetails.choosenProposal != address(0),
+            "No proposal has been chosen yet"
+        );
+
+        address proposalOwner = OwnableInterface(biddinDetails.choosenProposal)
+            .owner();
+
+        uint amountToBeTransferedToWinner = IERC20(
+            biddinDetails.biddingPayableTokenAddress
+        ).balanceOf(address(this)) -
+            ProposalTokenInterface(biddinDetails.choosenProposal).getValue();
+
+        uint amountToBeTransferedBackToGovernment = IERC20(
+            biddinDetails.biddingPayableTokenAddress
+        ).balanceOf(address(this)) - amountToBeTransferedToWinner;
+
+        IERC20(biddinDetails.biddingPayableTokenAddress).transfer(
+            proposalOwner,
+            amountToBeTransferedToWinner
+        );
+        IERC20(biddinDetails.biddingPayableTokenAddress).transfer(
+            proposalOwner,
+            amountToBeTransferedBackToGovernment
+        );
 
         biddinDetails.state = FINISHED_STATE; // it will block any other actions except by consulting
 
-        emit PayBidding(amountToBeTransferedToWinner, _winnerProposalTokenAddress, proposalOwner);
+        emit PayBidding(
+            amountToBeTransferedToWinner,
+            biddinDetails.choosenProposal,
+            proposalOwner
+        );
     }
 
-    function registerNewProposal(address _proposalAddress) external {
-        require(CompanyContractInterface(msg.sender).balanceOf(tx.origin) > 0, "This wallet is not the owner of any company");
+    function registerNewProposal(
+        address _proposalAddress
+    ) external OnlyState(IN_PROGRESS_STATE) {
+        require(
+            CompanyContractInterface(msg.sender).balanceOf(tx.origin) > 0,
+            "This wallet is not the owner of any company"
+        );
+        require(
+            ERC165Checker.supportsInterface(
+                _proposalAddress,
+                type(ProposalTokenInterface).interfaceId
+            ),
+            "The address sent was not from a Proposal"
+        );
 
-        // proposalAddresses.push(_proposalAddress);
-    } 
+        addMemberToProposalAddresses(_proposalAddress);
 
-    function getBiddingAvailableBudget() view public returns(uint256 balance){
-        return IERC20(biddinDetails.biddingPayableTokenAddress).balanceOf(address(this));
+        emit NewProposalRegistered(tx.origin, _proposalAddress);
     }
 
-    function getPayableTokenAddress() view public returns(address _payableTokenAddress) { _payableTokenAddress = biddinDetails.biddingPayableTokenAddress; }
-    function getProposal() view public returns(string memory _proposal) { _proposal = biddinDetails.proposal; }
-    function getDeployTime() view public returns(bytes memory _deployTime) { _deployTime = biddinDetails.deployTime; }
-    function getId() view public returns(bytes32 _id) { _id = biddinDetails.biddingId; }
-    function getTitle() view public returns(string memory _title) { _title = biddinDetails.title; }
+    function getBiddingAvailableBudget() public view returns (uint256 balance) {
+        return
+            IERC20(biddinDetails.biddingPayableTokenAddress).balanceOf(
+                address(this)
+            );
+    }
+
+    function addMemberToProposalAddresses(
+        address _newProposal
+    ) public OnlyState(IN_PROGRESS_STATE) {
+        proposalAddresses.push(_newProposal);
+    }
+
+    function getPayableTokenAddress()
+        public
+        view
+        returns (address _payableTokenAddress)
+    {
+        _payableTokenAddress = biddinDetails.biddingPayableTokenAddress;
+    }
+
+    function getProposal() public view returns (string memory _proposal) {
+        _proposal = biddinDetails.proposal;
+    }
+
+    function getDeployTime() public view returns (bytes memory _deployTime) {
+        _deployTime = biddinDetails.deployTime;
+    }
+
+    function getId() public view returns (bytes32 _id) {
+        _id = biddinDetails.biddingId;
+    }
+
+    function getTitle() public view returns (string memory _title) {
+        _title = biddinDetails.title;
+    }
 }
