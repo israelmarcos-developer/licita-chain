@@ -7,7 +7,12 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract CompanyContract is CompanyContractInterface, ERC721, ERC721Burnable, AccessControl {
+contract CompanyContract is
+    CompanyContractInterface,
+    ERC721,
+    ERC721Burnable,
+    AccessControl
+{
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     mapping(address => string) private cnpjs;
@@ -18,24 +23,29 @@ contract CompanyContract is CompanyContractInterface, ERC721, ERC721Burnable, Ac
         safeMint(msg.sender, uint(keccak256(abi.encodePacked(_cnpj))));
     }
 
-    function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+    function safeMint(
+        address to,
+        uint256 tokenId
+    ) public onlyRole(MINTER_ROLE) {
         _safeMint(to, tokenId);
     }
 
-        function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, AccessControl, IERC165) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
     function getCNPJ(address _owner) external view returns (string memory) {
-        require(_owner != address(0), "Company Token: address zero is not a valid owner");
-        require(balanceOf(tx.origin) > 0, "This Wallet doesn't contain a token");
-    
+        require(
+            _owner != address(0),
+            "Company Token: address zero is not a valid owner"
+        );
+        require(
+            balanceOf(tx.origin) > 0,
+            "This Wallet doesn't contain a token"
+        );
+
         return cnpjs[_owner];
     }
-
 }

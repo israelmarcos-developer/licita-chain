@@ -2,15 +2,16 @@ import {SingnIn} from "../services/Web3Service"
 import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image';
+import { useRouter } from 'next/router';
 
 const WalletButton = () => {
 
     const [isLoading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState <string | null>(null);
-    const [walletAddress, setWalletAddress] = useState <string | null>(null);
+    const [message, setMessage] = useState <string | null>(null);
 
-    // Effect loading 1000s
     const handleClick = () => setLoading(true);
+    const router = useRouter();
+
     useEffect(() => {
         function simulateNetworkRequest() {
             return new Promise((resolve) => setTimeout(resolve, 1000));
@@ -22,14 +23,16 @@ const WalletButton = () => {
                 // Web3Service - Login wallet user
                 const result = await SingnIn()
                 if (typeof result === 'string'){
-                    setErrorMessage(result)
-                }else {
-                    setWalletAddress(result);
+                    setMessage(result)
+                    const addressStorage = localStorage.getItem('address');
+                    if(addressStorage){
+                        router.push('/loading');
+                    }else{setMessage(result)}
                 }
               });
         }
-    }, [isLoading]);
-    
+    }, [isLoading, router]);
+       
 
     return (
         <div className='container'>
@@ -49,8 +52,7 @@ const WalletButton = () => {
                     </Button>
                 </div>
                 <p className="container mt-3">
-                    {walletAddress && <p>{walletAddress}</p>}
-                    {errorMessage && <p>{errorMessage}</p>}
+                    {message && <p>{message}</p>}
                 </p>
             </div>
         </div>
