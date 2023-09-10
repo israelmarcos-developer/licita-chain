@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-interface ProposalToken {
+interface ProposalTokenInterface {
 
     event ValueChanged(address indexed whoChanged, uint256 indexed newValue);
 
