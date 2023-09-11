@@ -11,7 +11,6 @@ export default function Home() {
       <div className='container custon-home'>
         <Row>
           <Col>
-            <Image src="/capaBR.jpg" width="600" alt='img' fluid />
           </Col>
           <Col>
           <div className='container'>
