@@ -3,6 +3,7 @@ import Tabs from 'react-bootstrap/Tabs';
 import FormLicitacao from '../../components/licitacao/FormLicitacao';
 import CardFornecedor from '../../components/fornecedor/CardFornecedor';
 import CardProposta from '../../components/proposta/CardProposta';
+import CardHistory from '../../components/history/CardHistory';
 
 
 function NavTabs() {
@@ -23,6 +24,7 @@ function NavTabs() {
         <CardProposta />
       </Tab>
       <Tab eventKey="history" title="Histórico" >
+      <CardHistory/>
       </Tab>
     </Tabs>
   );
