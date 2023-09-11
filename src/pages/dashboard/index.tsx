@@ -1,12 +1,22 @@
 import MenuNavigation from '../../components/MenuNavigation'
-import NavTabs from '../../components/NavTabs'
+import SideNav from '../../components/sidenav/SideNav'
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactNode, useMemo  } from 'react';
+import ComponentsDashboard from '../../components/ComponentsDashboard'
+import { SelectedComponentContext } from '../../components/SelectedComponentContext';
 
-export default function Home() {
+
+interface HomeProps {
+  children: ReactNode;
+}
+
+const Home: React.FC<HomeProps> = ({ children }) => {
 
   const [isVerified, setIsVerified] = useState(false);
+  const [selectedComponent] = useState('any');
   const router = useRouter();
+
+  const value = useMemo(() => ({ selectedComponent }), [selectedComponent]);
 
   useEffect(() => {
     const addressStorage = localStorage.getItem('address');
@@ -21,18 +31,18 @@ export default function Home() {
 
   return (
     <main>
-    {
-      isVerified && (
-        <>
-          <MenuNavigation />
-          <main>
-            <div className='container mt-3'>
-              <NavTabs />
-            </div>
-          </main>
-        </>
-      )
-    }
-  </main>
+      <div className='element-primary'>
+      {
+        isVerified && (
+          <SelectedComponentContext.Provider value={value}>
+            <MenuNavigation />
+            {children} {/* Renderiza os componentes filhos passados para Home */}
+            <ComponentsDashboard />
+          </SelectedComponentContext.Provider>
+        )
+      }
+      </div>
+    </main>
   )
 }
+export default Home;
