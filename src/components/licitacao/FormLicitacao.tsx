@@ -28,8 +28,6 @@ function FormLicitacao() {
       <Button variant="success" type="submit">
         Registrar Licitação
       </Button>
-
-
       </Row>
     </Form>
   );

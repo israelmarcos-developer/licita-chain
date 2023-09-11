@@ -38,7 +38,7 @@ const WalletButton = () => {
         <div className='container'>
             <div className='login-custon'>
                 <p className='title-custon'>Identifique-se no LicitaChain</p>
-                <h1 className='title2-custon'> Licita-Chain</h1>
+                <h2 className='title2-custon'> Licita-Chain</h2>
                 <div className='img-metamak-custon'>
                     <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1200px-MetaMask_Fox.svg.png" width="100" height="100" alt="Logo" />
                 </div>
