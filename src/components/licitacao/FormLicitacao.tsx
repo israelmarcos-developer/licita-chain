@@ -2,8 +2,30 @@ import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
+import {getValidBiddingContracts, myProvider} from '../../services/backend'
+
 
 function FormLicitacao() {
+
+  async function getLicitacoes() {
+    console.log('inicio')
+    try {
+      // Substitua 'contractAddress' e 'provider' pelos valores reais
+      const contractAddress = '0x371E7fc4E2F1E32309F054b4c4182256acf3aa68';
+  
+      const response = await getValidBiddingContracts(contractAddress, myProvider);
+      
+      console.log('response', response);
+      // Aqui você pode manipular a resposta da função getValidBiddingContracts
+    } catch (error) {
+      console.error('erro', error);
+      // Aqui você pode manipular os erros que podem ocorrer ao chamar a função getValidBiddingContracts
+    }
+    console.log('fim')
+  }
+  getLicitacoes()
+  
+
   return (
     <Form className='form-licitacao mt-5'>
       <Row className="mb-3 w-50">
@@ -25,7 +47,7 @@ function FormLicitacao() {
         </Form.Group>
       </Form>
 
-      <Button variant="success" type="submit">
+      <Button variant="success">
         Registrar Licitação
       </Button>
       </Row>
