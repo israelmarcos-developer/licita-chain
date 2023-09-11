@@ -19,7 +19,7 @@ const MenuNavigation = () => {
       <Navbar bg="light" data-bs-theme="light">
         <div className='container'>
         <Navbar.Brand className='logo-custon'>
-          <Image src="https://sso.acesso.gov.br/assets/govbr/img/govbr.png" width="135" height="50" alt="Logo" /> 
+          <Image src="/logoBR.png" width="135" height="50" alt="Logo" /> 
         </Navbar.Brand>
         </div>
         <Container></Container>

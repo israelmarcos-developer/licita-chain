@@ -11,7 +11,7 @@ export default function Home() {
       <div className='container custon-home'>
         <Row>
           <Col>
-            <Image src="https://sso.acesso.gov.br/assets/govbr/img/conta_govbr_v2.jpg" width="600" alt='img' fluid />
+            <Image src="/capaBR.jpg" width="600" alt='img' fluid />
           </Col>
           <Col>
           <div className='container'>
