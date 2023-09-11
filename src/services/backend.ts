@@ -1,8 +1,8 @@
 const ethers = require('ethers');
 import { AlchemyProvider, EventLog } from "ethers";
 import { env } from "process";
-import { BiddingFactory__factory } from "../../contracts/BiddingFactory__factory";
-import { Bidding__factory } from "../../contracts";
+import { BiddingFactory__factory } from "../../typechain-types/factories/contracts/BiddingFactory__factory";
+import { Bidding__factory } from "../../typechain-types/factories/contracts";
 
 
 export const myProvider = new ethers.AlchemyProvider("sepolia", env.ALCHEMY_HTTPS_KEY);
