@@ -25,7 +25,6 @@ function CardHistory() {
   console.log(dados)
 
 
-
   return (
     <Row>
       {dados ? (

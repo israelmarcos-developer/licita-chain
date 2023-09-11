@@ -5,11 +5,9 @@ import { env } from 'process';
 import { BiddingFactory__factory  } from '../../../contracts/BiddingFactory__factory';
 import { Bidding__factory } from '../../../contracts/Bidding__factory';
 import { ProposalToken__factory } from '../../../contracts/ProposalToken__factory';
-import { getAddress } from '../../components/Storage';
-
+ 
 
 export const myProvider = new ethers.AlchemyProvider("sepolia", env.ALCHEMY_HTTPS_KEY);
-
 export async function getValidBiddingContracts(contractAddress: string, provider: AlchemyProvider): Promise<biddingDetails[]> {
   
   const contract = new ethers.Contract(contractAddress, BiddingFactory__factory.abi, provider);
@@ -79,38 +77,7 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<biddingDetails[]>
 ) {
-    const filteredData = await getValidBiddingContracts("0x371E7fc4E2F1E32309F054b4c4182256acf3aa68", myProvider);
+    const filteredData = await getValidBiddingContracts("0x6f9122D54E6386071C98D0dBa937d55D2Be48581", myProvider);
     res.status(200).json(filteredData);
 }
 
-
-
-// Crie uma nova instância da carteira
-const address = getAddress();
-let wallet
-if (address !== null) {
-    wallet = new ethers.Wallet(address, myProvider);
-} else {
-  console.log('Verifique o Services, endereço nao encontrado')
-}
-
-// Crie uma nova instância do contrato
-const contract = BiddingFactory__factory.connect('0x371E7fc4E2F1E32309F054b4c4182256acf3aa68', wallet);
-
-export async function createBidding(biddingDetails: biddingDetails) {
-  // Chame a função do contrato para criar um novo certame
-  const tx = await contract.createBidding(
-    biddingDetails.id,
-    biddingDetails.title,
-    biddingDetails.deployTime,
-    biddingDetails.proposal,
-    biddingDetails.choosenProposal,
-    biddingDetails.biddingPayableTokenAddress,
-    biddingDetails.state
-  );
-
-  // Aguarde a transação ser minerada
-  const receipt = await tx.wait();
-
-  return receipt;
-}
