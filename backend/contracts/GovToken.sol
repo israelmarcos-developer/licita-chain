@@ -14,16 +14,16 @@ contract GovToken is ERC721, ERC721Burnable, AccessControl {
         safeMint(msg.sender, 1);
     }
 
-    function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+    function safeMint(
+        address to,
+        uint256 tokenId
+    ) public onlyRole(MINTER_ROLE) {
         _safeMint(to, tokenId);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
