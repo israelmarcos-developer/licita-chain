@@ -1,9 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { EventLog, Log, ethers } from 'ethers'
+import { EventLog, ethers, AlchemyProvider } from 'ethers'
 import { env } from 'process';
 import { BiddingFactory__factory, Bidding__factory, ProposalToken__factory } from '../../../contracts';
-import { AlchemyProvider } from 'ethers';
 
 export const myProvider = new ethers.AlchemyProvider("sepolia", env.ALCHEMY_HTTPS_KEY);
 
