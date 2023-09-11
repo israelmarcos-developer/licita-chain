@@ -1,7 +1,5 @@
 import Web3 from "web3";
 
-
-
 // Se a MetaMask não tiver instalada retorna um erro
 export async function SingnIn(){
 

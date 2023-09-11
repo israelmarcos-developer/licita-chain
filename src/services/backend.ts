@@ -4,6 +4,9 @@ import { env } from "process";
 import { BiddingFactory__factory } from "../../contracts/BiddingFactory__factory";
 import { Bidding__factory } from "../../contracts";
 
+
+export const myProvider = new ethers.AlchemyProvider("sepolia", env.ALCHEMY_HTTPS_KEY);
+console.log(myProvider)
 type biddingDetails = {
     hash: string,
     id: string, 
@@ -16,8 +19,7 @@ type biddingDetails = {
   }
 
 
-const myProvider = new ethers.AlchemyProvider("sepolia", env.ALCHEMY_HTTPS_KEY);
-async function getValidBiddingContracts(contractAddress: string, provider: AlchemyProvider): Promise<biddingDetails[]> {
+export async function getValidBiddingContracts(contractAddress: string, provider: AlchemyProvider): Promise<biddingDetails[]> {
 
     const contract = new ethers.Contract(contractAddress, BiddingFactory__factory.abi, provider);
     const filteredData = await contract.queryFilter(contract.filters.NewBiddingEmitted, 0, "latest");
