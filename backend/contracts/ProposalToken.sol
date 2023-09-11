@@ -23,7 +23,7 @@ contract ProposalToken is ProposalTokenInterface, ERC165Storage {
         _registerInterface(type(ProposalTokenInterface).interfaceId);
     }
 
-    function getValue() external view override returns (uint256) {
+    function getValue() public view returns (uint256) {
         return value;
     }
 

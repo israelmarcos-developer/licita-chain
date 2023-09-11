@@ -8,8 +8,6 @@ import "./interfaces/CompanyContractInterface.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./RealDigital.sol";
 
-import "hardhat/console.sol";
-
 contract Bidding is ERC165 {
     struct Details {
         bytes32 biddingId;
@@ -66,9 +64,12 @@ contract Bidding is ERC165 {
     );
     event ProposalChosen(address indexed _chosenProposalAddress);
 
+    address public companyTokenAddress;
+
     constructor(
         string memory _title,
         address _biddingPayableTokenAddress,
+        address _companyTokenAddress,
         string memory _proposal
     ) {
         biddinDetails = Details(
@@ -80,6 +81,7 @@ contract Bidding is ERC165 {
             _biddingPayableTokenAddress,
             IN_PROGRESS_STATE
         );
+        companyTokenAddress = _companyTokenAddress;
         owner = address(tx.origin);
     }
 
@@ -107,28 +109,21 @@ contract Bidding is ERC165 {
             "No proposal has been chosen yet"
         );
 
-        console.log("Who sent: ", msg.sender);
-
         address proposalOwner = OwnableInterface(biddinDetails.choosenProposal)
             .owner();
 
-        console.log("Who detected: ", proposalOwner);
+        uint thisTokenAmount =  IERC20(biddinDetails.biddingPayableTokenAddress).balanceOf(address(this));
 
-        uint amountToBeTransferedToGovernment = IERC20(
-            biddinDetails.biddingPayableTokenAddress
-        ).balanceOf(address(this)) -
-            ProposalTokenInterface(biddinDetails.choosenProposal).getValue();
+        uint amountToBeTransferedToGovernment = thisTokenAmount - ProposalTokenInterface(biddinDetails.choosenProposal).getValue();
 
-        uint amountToBeTransferedToWinner = IERC20(
-            biddinDetails.biddingPayableTokenAddress
-        ).balanceOf(address(this)) - amountToBeTransferedToGovernment;
+        uint amountToBeTransferedToWinner = thisTokenAmount - amountToBeTransferedToGovernment; 
 
         IERC20(biddinDetails.biddingPayableTokenAddress).transfer(
             proposalOwner,
             amountToBeTransferedToWinner
         );
         IERC20(biddinDetails.biddingPayableTokenAddress).transfer(
-            proposalOwner,
+            owner,
             amountToBeTransferedToGovernment
         );
 
@@ -143,9 +138,9 @@ contract Bidding is ERC165 {
 
     function registerNewProposal(
         address _proposalAddress
-    ) external OnlyState(IN_PROGRESS_STATE) {
+    ) public OnlyState(IN_PROGRESS_STATE) {
         require(
-            CompanyContractInterface(msg.sender).balanceOf(tx.origin) > 0,
+            CompanyContractInterface(companyTokenAddress).balanceOf(tx.origin) > 0,
             "This wallet is not the owner of any company"
         );
         require(
@@ -156,7 +151,8 @@ contract Bidding is ERC165 {
             "The address sent was not from a Proposal"
         );
 
-        addMemberToProposalAddresses(_proposalAddress);
+        proposalAddresses.push(_proposalAddress);
+        emit NewProposalRegistered(tx.origin, _proposalAddress);
     }
 
     function getBiddingAvailableBudget() public view returns (uint256 balance) {
@@ -164,14 +160,6 @@ contract Bidding is ERC165 {
             IERC20(biddinDetails.biddingPayableTokenAddress).balanceOf(
                 address(this)
             );
-    }
-
-    function addMemberToProposalAddresses(
-        address _newProposal
-    ) public OnlyState(IN_PROGRESS_STATE) {
-        proposalAddresses.push(_newProposal);
-
-        emit NewProposalRegistered(tx.origin, _newProposal);
     }
 
     function getPayableTokenAddress()
@@ -200,5 +188,17 @@ contract Bidding is ERC165 {
 
     function getTitle() public view returns (string memory _title) {
         _title = biddinDetails.title;
+    }
+
+    function getDetails() public view returns(bytes32, string memory, bytes memory, string memory, address, address, bytes32) {
+        return (
+            biddinDetails.biddingId,
+            biddinDetails.title,
+            biddinDetails.deployTime,
+            biddinDetails.proposal,
+            biddinDetails.choosenProposal,
+            biddinDetails.biddingPayableTokenAddress,
+            biddinDetails.state
+        );
     }
 }
