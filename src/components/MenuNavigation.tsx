@@ -1,9 +1,9 @@
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
-import Image from "next/image";
 import { useRouter } from 'next/router';
 import { logoffUser } from "../services/Web3Service"
 import Button from 'react-bootstrap/Button';
+import Image from "next/image";
 
 
 const MenuNavigation = () => {
@@ -18,9 +18,9 @@ const MenuNavigation = () => {
     <div className='box-shadow-custon'>
       <Navbar bg="light" data-bs-theme="light">
         <div className='container'>
-          <Navbar.Brand>
-            <Image src="https://sso.acesso.gov.br/assets/govbr/img/govbr.png" width="135" height="50" alt="Logo" />
-          </Navbar.Brand>
+        <Navbar.Brand className='logo-custon'>
+          <Image src="https://sso.acesso.gov.br/assets/govbr/img/govbr.png" width="135" height="50" alt="Logo" /> 
+        </Navbar.Brand>
         </div>
         <Container></Container>
         {router.pathname === '/dashboard' && (

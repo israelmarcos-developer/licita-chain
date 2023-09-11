@@ -1,6 +1,8 @@
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
-import FormLicitacao from '../components/FormLicitacao';
+import FormLicitacao from '../../components/licitacao/FormLicitacao';
+import CardFornecedor from '../../components/fornecedor/CardFornecedor';
+import CardProposta from '../../components/proposta/CardProposta';
 
 
 function NavTabs() {
@@ -15,13 +17,12 @@ function NavTabs() {
         <FormLicitacao />
       </Tab>
       <Tab eventKey="profile" title="Fornecedor">
-      Tab content for Contact
+        <CardFornecedor />
       </Tab>
       <Tab eventKey="contact" title="Propostas / Pagamento" >
-        Tab content
+        <CardProposta />
       </Tab>
       <Tab eventKey="history" title="Histórico" >
-        Tab content2
       </Tab>
     </Tabs>
   );
